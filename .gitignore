@@ -1,0 +1,41 @@
+## .NET / C# / WPF
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+
+## NuGet
+*.nupkg
+**/packages/*
+*.nuget.props
+*.nuget.targets
+
+## Visual Studio
+*.rsuser
+*.ncb
+*.opendb
+*.sdf
+*.opensdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+## Rider
+.idea/
+
+## OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
