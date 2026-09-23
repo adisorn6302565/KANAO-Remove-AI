@@ -179,13 +179,15 @@
                 <TextBlock Grid.Column="0" VerticalAlignment="Center"
                            FontSize="11" Foreground="{StaticResource TextMutedBrush}">
                     <Run Text="Developed by "/><Run Text="KANAO" Foreground="{StaticResource AccentCyanBrush}" FontWeight="SemiBold"/>
-                    <Run Text="  •  v1.0.0  •  Windows 10/11"/>
+                    <Run Text="  •  v1.1.0  •  Engine by "/><Run Text="zoicware" Foreground="{StaticResource AccentCyanBrush}"/>
                 </TextBlock>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="📄 Open Log" Style="{StaticResource GhostButton}"
+                            Click="OpenLog_Click" Margin="0,0,8,0" FontSize="11" Padding="12,6"/>
                     <Button Content="💬 Discord" Style="{StaticResource GhostButton}"
                             Click="Discord_Click" Margin="0,0,8,0" FontSize="11" Padding="12,6"/>
-                    <Button Content="🐙 GitHub" Style="{StaticResource GhostButton}"
+                    <Button Content="🐙 Engine (GitHub)" Style="{StaticResource GhostButton}"
                             Click="GitHub_Click" FontSize="11" Padding="12,6"/>
                 </StackPanel>
             </Grid>
@@ -214,7 +216,11 @@
                            Foreground="White" HorizontalAlignment="Center"/>
                 <TextBlock x:Name="OverlayDetailText" Text="KANAO is working..."
                            FontSize="12" Foreground="{StaticResource TextMutedBrush}"
-                           HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                           HorizontalAlignment="Center" Margin="0,8,0,0"
+                           MaxWidth="560" TextTrimming="CharacterEllipsis"/>
+                <Button x:Name="CancelButton" Content="✖ Cancel" Style="{StaticResource GhostButton}"
+                        HorizontalAlignment="Center" Margin="0,20,0,0"
+                        Click="Cancel_Click"/>
             </StackPanel>
         </Border>
     </Grid>

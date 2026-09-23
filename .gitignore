@@ -39,3 +39,8 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 .DS_Store
+
+## Local publish output
+publish/
+out/
+Releases/

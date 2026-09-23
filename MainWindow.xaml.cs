@@ -16,6 +16,8 @@ public partial class MainWindow : Window
     private readonly List<FeatureItem> _classicApps = new();
     private readonly Dictionary<string, CheckBox> _checkboxMap = new();
     private bool _isProcessing;
+    private CancellationTokenSource? _cts;
+    private readonly System.Text.StringBuilder _log = new();
 
     public MainWindow()
     {
@@ -28,10 +30,12 @@ public partial class MainWindow : Window
             AdminStatusText.Foreground = FindResource("AccentRedBrush") as Brush;
         }
 
+        if (!_psRunner.IsScriptLoaded)
+            AppendLog("Engine script (RemoveWindowsAi.ps1) is missing from this build.", isError: true);
+
         _psRunner.OutputReceived += msg => Dispatcher.Invoke(() => AppendLog(msg));
         _psRunner.ErrorReceived += msg => Dispatcher.Invoke(() => AppendLog(msg, isError: true));
         _psRunner.StatusChanged += msg => Dispatcher.Invoke(() => UpdateStatus(msg));
-        _psRunner.ExecutionCompleted += () => Dispatcher.Invoke(OnExecutionCompleted);
 
         InitializeFeatures();
         BuildFeatureCards();
@@ -44,7 +48,7 @@ public partial class MainWindow : Window
         {
             Name = "Disable AI Registry Keys",
             Description = "Disables Copilot, Recall, Input Insights, AI Actions, Voice Access, AI Voice Effects, Gaming AI, Office AI, and AI in Settings Search via comprehensive registry modifications for all users.",
-            FunctionName = "Disable-Registry-Keys",
+            FunctionName = "DisableRegKeys",
             Category = "Core",
             Icon = "🔑"
         });
@@ -52,7 +56,7 @@ public partial class MainWindow : Window
         {
             Name = "Disable Copilot Policies",
             Description = "Modifies IntegratedServicesRegionPolicySet.json to disable all Copilot-related policies, preventing region-based AI feature activation.",
-            FunctionName = "Disable-Copilot-Policies",
+            FunctionName = "DisableCopilotPolicies",
             Category = "Core",
             Icon = "📜"
         });
@@ -60,7 +64,7 @@ public partial class MainWindow : Window
         {
             Name = "Hide AI Components",
             Description = "Hides the 'AI Components' settings page from Windows Settings, preventing users from accidentally enabling AI features.",
-            FunctionName = "Hide-AI-Components",
+            FunctionName = "HideAIComponents",
             Category = "Core",
             Icon = "👁️"
         });
@@ -70,7 +74,7 @@ public partial class MainWindow : Window
         {
             Name = "Remove AI Appx Packages",
             Description = "Removes all AI-related Appx packages including Non-removable and Inbox packages using advanced system exploits (EndOfLife, Deprovisioning, SetNonRemovableAppsPolicy).",
-            FunctionName = "Remove-AI-Appx-Packages",
+            FunctionName = "RemoveAppxPackages",
             Category = "Package",
             Icon = "📦"
         });
@@ -78,7 +82,7 @@ public partial class MainWindow : Window
         {
             Name = "Remove AI CBS Packages",
             Description = "Removes hidden and locked AI packages in the Component-Based Servicing store by modifying visibility keys and removing owner/update references.",
-            FunctionName = "Remove-AI-CBS-Packages",
+            FunctionName = "RemoveCBSPackages",
             Category = "Package",
             Icon = "🗄️"
         });
@@ -86,7 +90,7 @@ public partial class MainWindow : Window
         {
             Name = "Prevent AI Reinstall",
             Description = "Installs a custom Windows Update blocker package that makes Windows think a newer version of AI packages is already installed, preventing re-download.",
-            FunctionName = "Prevent-AI-Package-Reinstall",
+            FunctionName = "PreventAIPackageReinstall",
             Category = "Package",
             Icon = "🚫"
         });
@@ -96,7 +100,7 @@ public partial class MainWindow : Window
         {
             Name = "Remove AI Files & Folders",
             Description = "Full system cleanup: removes Appx install locations, Machine Learning DLLs, hidden Copilot installers, and all remaining AI registry keys and package files.",
-            FunctionName = "Remove-AI-Files",
+            FunctionName = "RemoveAIFiles",
             Category = "Deep",
             Icon = "🗑️"
         });
@@ -104,7 +108,7 @@ public partial class MainWindow : Window
         {
             Name = "Remove Recall Feature",
             Description = "Completely disables and removes the Windows Recall optional feature, achieving DisabledWithPayloadRemoved state to prevent any data collection.",
-            FunctionName = "Remove-Recall-Optional-Feature",
+            FunctionName = "RemoveRecallFeature",
             Category = "Deep",
             Icon = "🔍"
         });
@@ -112,7 +116,7 @@ public partial class MainWindow : Window
         {
             Name = "Remove Recall Tasks",
             Description = "Uses system-level privileges to forcibly delete all Recall scheduled tasks, including their registry entries and task files.",
-            FunctionName = "Remove-Recall-Tasks",
+            FunctionName = "RemoveRecallTasks",
             Category = "Deep",
             Icon = "⏰"
         });
@@ -122,7 +126,7 @@ public partial class MainWindow : Window
         {
             Name = "Disable Notepad AI Rewrite",
             Description = "Disables the AI-powered Rewrite feature in Windows Notepad via both settings.dat modification and Group Policy enforcement.",
-            FunctionName = "Disable-Notepad-Rewrite",
+            FunctionName = "DisableRewrite",
             Category = "App",
             Icon = "📝"
         });
@@ -132,7 +136,7 @@ public partial class MainWindow : Window
         {
             Name = "Classic Photo Viewer",
             Description = "Restores the classic Windows Photo Viewer as the default image viewer.",
-            FunctionName = "Install-Classic-Photoviewer",
+            FunctionName = "photoviewer",
             Category = "Classic",
             Icon = "🖼️"
         });
@@ -140,7 +144,7 @@ public partial class MainWindow : Window
         {
             Name = "Classic Paint",
             Description = "Replaces the AI-enhanced Paint with the classic mspaint.exe extracted from Windows Server 2025.",
-            FunctionName = "Install-Classic-Mspaint",
+            FunctionName = "mspaint",
             Category = "Classic",
             Icon = "🎨"
         });
@@ -148,7 +152,7 @@ public partial class MainWindow : Window
         {
             Name = "Classic Snipping Tool",
             Description = "Replaces the modern AI Snipping Tool with the classic version from Windows Server 2025.",
-            FunctionName = "Install-Classic-SnippingTool",
+            FunctionName = "snippingtool",
             Category = "Classic",
             Icon = "✂️"
         });
@@ -156,7 +160,7 @@ public partial class MainWindow : Window
         {
             Name = "Classic Notepad",
             Description = "Replaces the modern Notepad (with AI Rewrite) with the classic ad-free Notepad.",
-            FunctionName = "Install-Classic-Notepad",
+            FunctionName = "notepad",
             Category = "Classic",
             Icon = "📄"
         });
@@ -164,7 +168,7 @@ public partial class MainWindow : Window
         {
             Name = "Photos Legacy",
             Description = "Installs the legacy Microsoft Photos app (UWP store version without AI features).",
-            FunctionName = "Install-Photos-Legacy",
+            FunctionName = "photoslegacy",
             Category = "Classic",
             Icon = "📷"
         });
@@ -369,55 +373,109 @@ public partial class MainWindow : Window
 
         _isProcessing = true;
         ApplyButton.IsEnabled = false;
+        _cts = new CancellationTokenSource();
         ShowProcessingOverlay(true);
         ClearLog();
 
+        var results = new List<(string Step, RunResult Result)>();
         try
         {
             if (selectedFeatures.Count > 0)
             {
-                var funcNames = selectedFeatures.Select(f => f.FunctionName);
-                await _psRunner.ExecuteAsync(funcNames, revertMode, backupMode);
+                var r = await _psRunner.RemoveFeaturesAsync(
+                    selectedFeatures.Select(f => f.FunctionName), revertMode, backupMode, _cts.Token);
+                results.Add(("AI features", r));
             }
 
-            if (selectedClassicApps.Count > 0)
+            if (selectedClassicApps.Count > 0 && !_cts.IsCancellationRequested)
             {
-                var appNames = selectedClassicApps.Select(f => f.FunctionName switch
-                {
-                    "Install-Classic-Photoviewer" => "photoviewer",
-                    "Install-Classic-Mspaint" => "mspaint",
-                    "Install-Classic-SnippingTool" => "snippingtool",
-                    "Install-Classic-Notepad" => "notepad",
-                    "Install-Photos-Legacy" => "photoslegacy",
-                    _ => ""
-                }).Where(n => !string.IsNullOrEmpty(n));
-
-                await _psRunner.ExecuteClassicAppInstallAsync(appNames);
-            }
-
-            var restartResult = MessageBox.Show(
-                "KANAO Remove AI — All operations completed!\n\nRestart your computer now to apply all changes?",
-                "KANAO Remove AI", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (restartResult == MessageBoxResult.Yes)
-            {
-                Process.Start("shutdown", "/r /t 5 /c \"Restarting — KANAO Remove AI\"");
-                Close();
+                var r = await _psRunner.InstallClassicAppsAsync(
+                    selectedClassicApps.Select(f => f.FunctionName), _cts.Token);
+                results.Add(("Classic apps", r));
             }
         }
         catch (Exception ex)
         {
             AppendLog($"Error: {ex.Message}", isError: true);
-            MessageBox.Show($"An error occurred:\n{ex.Message}", "KANAO Remove AI — Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            results.Add(("Unexpected error", new RunResult(-1, 1, false)));
+        }
+        finally
+        {
+            _isProcessing = false;
+            ApplyButton.IsEnabled = true;
+            _cts.Dispose();
+            _cts = null;
+            ShowProcessingOverlay(false);
+        }
+
+        ReportResults(results);
+    }
+
+    private void ReportResults(List<(string Step, RunResult Result)> results)
+    {
+        if (results.Any(r => r.Result.Cancelled))
+        {
+            UpdateStatus("Cancelled");
+            AppendLog("Cancelled. Some changes may already have been applied — see the log.", isError: true);
+            return;
+        }
+
+        var failed = results.Where(r => !r.Result.Success).ToList();
+        if (failed.Count > 0)
+        {
+            UpdateStatus("Finished with errors");
+            var detail = string.Join("\n", failed.Select(f => $"• {f.Step}: exit code {f.Result.ExitCode}"));
+            MessageBox.Show($"Some operations failed:\n{detail}\n\nLog file:\n{_psRunner.LogFilePath}",
+                "KANAO Remove AI — Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        UpdateStatus("Complete");
+        AppendLog("✅ All operations completed.");
+        var restart = MessageBox.Show(
+            "All operations completed.\n\nRestart your computer now to apply all changes?",
+            "KANAO Remove AI", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (restart == MessageBoxResult.Yes)
+        {
+            Process.Start(new ProcessStartInfo("shutdown", "/r /t 5 /c \"Restarting — KANAO Remove AI\"")
+                { CreateNoWindow = true, UseShellExecute = false });
+            Close();
         }
     }
 
-    private void OnExecutionCompleted()
+    private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        _isProcessing = false;
-        ApplyButton.IsEnabled = true;
-        ShowProcessingOverlay(false);
+        if (_cts == null) return;
+        var confirm = MessageBox.Show(
+            "Stop the current operation?\n\nChanges already applied will NOT be rolled back.",
+            "KANAO Remove AI", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirm == MessageBoxResult.Yes)
+        {
+            UpdateStatus("Cancelling...");
+            _cts?.Cancel();
+        }
+    }
+
+    private void OpenLog_Click(object sender, RoutedEventArgs e)
+    {
+        if (!System.IO.File.Exists(_psRunner.LogFilePath))
+        {
+            MessageBox.Show("No log yet — run an operation first.", "KANAO Remove AI");
+            return;
+        }
+        Process.Start(new ProcessStartInfo(_psRunner.LogFilePath) { UseShellExecute = true });
+    }
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        if (_isProcessing)
+        {
+            MessageBox.Show("Please wait for the current operation to finish (or press Cancel).",
+                "KANAO Remove AI", MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Cancel = true;
+            return;
+        }
+        base.OnClosing(e);
     }
 
     private void Discord_Click(object sender, RoutedEventArgs e)
@@ -432,19 +490,21 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrWhiteSpace(message)) return;
 
-        if (LogTextBlock.Text == "KANAO Remove AI — Ready")
-            LogTextBlock.Text = "";
-
-        var timestamp = DateTime.Now.ToString("HH:mm:ss");
+        if (_log.Length > 200_000) _log.Remove(0, 50_000);   // keep the UI responsive on long runs
         var prefix = isError ? "❌" : "▸";
-        LogTextBlock.Text += $"\n[{timestamp}] {prefix} {message}";
+        _log.Append($"[{DateTime.Now:HH:mm:ss}] {prefix} {message.Trim()}\n");
+        LogTextBlock.Text = _log.ToString();
+        if (_isProcessing) OverlayDetailText.Text = message.Trim();
 
         if (LogTextBlock.Parent is ScrollViewer sv)
             sv.ScrollToEnd();
     }
 
     private void ClearLog()
-        => LogTextBlock.Text = "";
+    {
+        _log.Clear();
+        LogTextBlock.Text = "";
+    }
 
     private void UpdateStatus(string status)
     {
