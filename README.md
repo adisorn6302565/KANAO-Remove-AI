@@ -12,6 +12,39 @@ A WPF front-end for the [RemoveWindowsAI](https://github.com/zoicware/RemoveWind
 
 ---
 
+## 🇹🇭 วิธีติดตั้งและใช้งาน (ภาษาไทย)
+
+**ไม่ต้องติดตั้ง** เป็นไฟล์ EXE ไฟล์เดียว ดาวน์โหลดแล้วเปิดใช้ได้เลย
+
+1. ไปที่หน้า [**Releases ล่าสุด**](../../releases/latest)
+2. ดาวน์โหลด **`KanaoRemoveAI.exe`** (~70 MB, ใช้ได้ทุกเครื่อง)
+   หรือ `KanaoRemoveAI-small.exe` (~0.5 MB, ต้องมี [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) ก่อน)
+3. ดับเบิลคลิกไฟล์ → กด **Yes** ที่ UAC (ต้องใช้สิทธิ์ Administrator)
+   - ถ้า Windows SmartScreen เตือน ให้กด **More info → Run anyway** (โปรแกรมยังไม่ได้ sign)
+4. เปิด **Backup Mode** (สร้างจุด System Restore ก่อน, แนะนำครั้งแรก)
+5. เลือกฟีเจอร์ที่ต้องการปิด → กด **⚡ Apply** → ยืนยัน
+6. รอจนเสร็จ แล้วกด **Yes** เพื่อรีสตาร์ทเครื่อง
+
+**ย้อนกลับ:** เปิด **Revert Mode** → เลือกฟีเจอร์เดิม → Apply  หรือใช้ System Restore จาก Backup Mode
+**ดู log:** กดปุ่ม **📄 Open Log** (ไฟล์อยู่ที่ `%TEMP%\KanaoRemoveAI\`)
+**ถอนโปรแกรม:** ลบไฟล์ EXE ทิ้งได้เลย (ไม่มีอะไรติดตั้งค้างในเครื่อง)
+
+**Build เอง:** ติดตั้ง [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) แล้วดับเบิลคลิก `build.bat` → ได้ไฟล์ที่ `publish\KanaoRemoveAI.exe`
+
+```mermaid
+flowchart LR
+    A[Releases] -->|ดาวน์โหลด| B[KanaoRemoveAI.exe]
+    B -->|UAC: Yes| C[เปิดโปรแกรม]
+    C --> D[Backup Mode ✔]
+    D --> E[เลือกฟีเจอร์]
+    E --> F[⚡ Apply]
+    F --> G{สำเร็จ?}
+    G -->|ใช่| H[รีสตาร์ท]
+    G -->|ไม่| I[📄 Open Log]
+```
+
+---
+
 ## Contents
 
 - [Download](#-download)
