@@ -184,11 +184,7 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Content="📄 Open Log" Style="{StaticResource GhostButton}"
-                            Click="OpenLog_Click" Margin="0,0,8,0" FontSize="11" Padding="12,6"/>
-                    <Button Content="💬 Discord" Style="{StaticResource GhostButton}"
-                            Click="Discord_Click" Margin="0,0,8,0" FontSize="11" Padding="12,6"/>
-                    <Button Content="🐙 Engine (GitHub)" Style="{StaticResource GhostButton}"
-                            Click="GitHub_Click" FontSize="11" Padding="12,6"/>
+                            Click="OpenLog_Click" FontSize="11" Padding="12,6"/>
                 </StackPanel>
             </Grid>
         </Border>

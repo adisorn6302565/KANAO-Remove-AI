@@ -478,12 +478,6 @@ public partial class MainWindow : Window
         base.OnClosing(e);
     }
 
-    private void Discord_Click(object sender, RoutedEventArgs e)
-        => Process.Start(new ProcessStartInfo("https://discord.gg/VsC7XS5vgA") { UseShellExecute = true });
-
-    private void GitHub_Click(object sender, RoutedEventArgs e)
-        => Process.Start(new ProcessStartInfo("https://github.com/zoicware/RemoveWindowsAI") { UseShellExecute = true });
-
     // ═══════════════ UI HELPERS ═══════════════
 
     private void AppendLog(string message, bool isError = false)
