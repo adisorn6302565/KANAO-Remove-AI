@@ -2965,7 +2965,7 @@ if ($nonInteractive) {
         #loop through options array and run desired tweaks
         switch ($Options) {
             'DisableRegKeys' { Disable-Registry-Keys }
-            'Prevent-AI-Package-Reinstall' { Install-NOAIPackage }
+            'PreventAIPackageReinstall' { Install-NOAIPackage }
             'DisableCopilotPolicies' { Disable-Copilot-Policies }
             'RemoveAppxPackages' { Remove-AI-Appx-Packages }
             'RemoveRecallFeature' { Remove-Recall-Optional-Feature }
