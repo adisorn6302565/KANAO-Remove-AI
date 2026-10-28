@@ -18,7 +18,8 @@ type TabType = 'all' | FeatureCategory;
 
 export const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('th');
-  const [isAdmin, setIsAdmin] = useState<boolean>(true);
+  // Starts false so Apply stays disabled until the backend confirms admin rights.
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [revertMode, setRevertMode] = useState<boolean>(false);
   const [backupMode, setBackupMode] = useState<boolean>(false);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<Set<string>>(
@@ -392,7 +393,7 @@ export const App: React.FC = () => {
             type="button"
             className="btn btn-primary btn-apply-main"
             onClick={handleApplyClick}
-            disabled={isProcessing || totalSelected === 0}
+            disabled={isProcessing || totalSelected === 0 || !isAdmin}
           >
             <Zap size={16} />
             <span>{revertMode ? t.revertChanges : t.applyChanges}</span>

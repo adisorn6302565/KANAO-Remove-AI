@@ -361,6 +361,10 @@ async fn run_engine(
     revert_mode: bool,
     backup_mode: bool,
 ) -> Result<EngineRunResult, String> {
+    if !check_admin() {
+        return Err("Administrator rights are required to run the engine".into());
+    }
+
     // Keep blocking process waits off the async runtime so UI and cancel stay responsive.
     tauri::async_runtime::spawn_blocking(move || {
         let state = app.state::<EngineState>();
