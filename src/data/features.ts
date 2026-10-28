@@ -165,15 +165,4 @@ export const CLASSIC_APPS: FeatureItem[] = [
     iconName: 'FileCode',
     defaultSelected: false,
   },
-  {
-    id: 'photoslegacy',
-    name: 'Photos Legacy',
-    description: 'Installs the legacy Microsoft Photos app (UWP store version without AI features).',
-    nameTh: 'ติดตั้ง Photos Legacy',
-    descriptionTh: 'ติดตั้ง Microsoft Photos รุ่นเก่า (UWP Legacy) ที่ใช้งานง่ายและไม่มีฟีเจอร์ AI หน่วงเครื่อง',
-    functionName: 'photoslegacy',
-    category: 'Classic',
-    iconName: 'Camera',
-    defaultSelected: false,
-  },
 ];

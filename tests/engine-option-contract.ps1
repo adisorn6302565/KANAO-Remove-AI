@@ -55,6 +55,14 @@ function Assert-SameSet([string]$Label, [string[]]$Expected, [string[]]$Actual) 
     }
 }
 
+# Every UI id must be accepted by the engine; the engine may accept ids the UI hides.
+function Assert-Covers([string]$Label, [string[]]$Required, [string[]]$Available) {
+    $missing = @($Required | Where-Object { $Available -notcontains $_ })
+    if ($missing.Count) {
+        throw "$Label missing: [$($missing -join ', ')]"
+    }
+}
+
 # Read the UI feature lists from features.ts without evaluating TypeScript.
 $featuresText = Get-Content -LiteralPath $FeaturesPath -Raw -Encoding UTF8
 $aiStart = $featuresText.IndexOf('export const AI_FEATURES')
@@ -69,9 +77,9 @@ if (!$aiFunctions.Count -or !$classicFunctions.Count) { throw 'No functionName v
 $optionValues = Get-ValidateSetValues 'Options'
 $classicValues = Get-ValidateSetValues 'InstallClassicApps'
 
-Assert-SameSet 'UI feature functionName vs -Options' $aiFunctions $optionValues
+Assert-Covers 'UI feature functionName vs -Options' $aiFunctions $optionValues
 Assert-SameSet '-Options vs non-interactive dispatch switch' $optionValues (Get-SwitchLabels 'Options')
-Assert-SameSet 'UI classic functionName vs -InstallClassicApps' $classicFunctions $classicValues
+Assert-Covers 'UI classic functionName vs -InstallClassicApps' $classicFunctions $classicValues
 Assert-SameSet '-InstallClassicApps vs install-classicapps switch' $classicValues (Get-SwitchLabels 'app' 'install-classicapps')
 
 Write-Output 'PASS: engine options match the UI feature contract.'
