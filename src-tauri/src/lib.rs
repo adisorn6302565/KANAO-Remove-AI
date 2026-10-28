@@ -3,6 +3,7 @@ use std::io::{BufRead, BufReader, Write};
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use chrono::Local;
 use serde::{Deserialize, Serialize};
@@ -19,6 +20,21 @@ const DOMAIN_ALIAS_RID_ADMINS: u32 = 0x00000220;
 pub struct EngineState {
     pub child_pid: Arc<Mutex<Option<u32>>>,
     pub active_log_path: Arc<Mutex<Option<PathBuf>>>,
+    pub running: AtomicBool,
+    pub cancel_requested: AtomicBool,
+}
+
+/// Clears the running flag when a run ends, including early returns.
+struct RunGuard<'a>(&'a AtomicBool);
+
+impl Drop for RunGuard<'_> {
+    fn drop(&mut self) {
+        self.0.store(false, Ordering::SeqCst);
+    }
+}
+
+fn cancel_requested(state: &EngineState) -> bool {
+    state.cancel_requested.load(Ordering::SeqCst)
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -217,18 +233,25 @@ fn kill_ai_processes() {
     }
 }
 
-/// Cancels current running engine execution
+/// Terminates a process and all of its children
+fn kill_process_tree(pid: u32) {
+    let _ = Command::new("taskkill")
+        .args(["/F", "/T", "/PID", &pid.to_string()])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output();
+}
+
+/// Cancels the current engine run; steps that have not started yet are skipped
 #[tauri::command]
 fn cancel_engine(state: State<EngineState>) -> Result<(), String> {
-    if let Some(pid) = *state.child_pid.lock().unwrap() {
-        let _ = Command::new("taskkill")
-            .args(["/F", "/T", "/PID", &pid.to_string()])
-            .creation_flags(CREATE_NO_WINDOW)
-            .output();
-        Ok(())
-    } else {
-        Err("No active operation to cancel".into())
+    if !state.running.load(Ordering::SeqCst) {
+        return Err("No active operation to cancel".into());
     }
+    state.cancel_requested.store(true, Ordering::SeqCst);
+    if let Some(pid) = *state.child_pid.lock().unwrap() {
+        kill_process_tree(pid);
+    }
+    Ok(())
 }
 
 fn append_to_log_file(log_path: &Path, line: &str) {
@@ -269,6 +292,10 @@ fn execute_step(
 
     let pid = child.id();
     *state.child_pid.lock().unwrap() = Some(pid);
+    // A cancel that arrived before the PID was recorded would otherwise miss this child.
+    if cancel_requested(state) {
+        kill_process_tree(pid);
+    }
 
     let stdout = child.stdout.take().ok_or("Failed to capture stdout")?;
     let stderr = child.stderr.take().ok_or("Failed to capture stderr")?;
@@ -351,6 +378,12 @@ fn run_engine_blocking(
     revert_mode: bool,
     backup_mode: bool,
 ) -> Result<EngineRunResult, String> {
+    if state.running.swap(true, Ordering::SeqCst) {
+        return Err("Another operation is already running".into());
+    }
+    let _running = RunGuard(&state.running);
+    state.cancel_requested.store(false, Ordering::SeqCst);
+
     let work_dir = get_work_dir();
     fs::create_dir_all(&work_dir).map_err(|e| e.to_string())?;
 
@@ -391,10 +424,9 @@ fn run_engine_blocking(
     let script_str = target_script_path.to_string_lossy().to_string();
     let mut total_errors: usize = 0;
     let mut last_exit_code: i32 = 0;
-    let was_cancelled = false;
 
     // Run AI options if any
-    if !options.is_empty() {
+    if !options.is_empty() && !cancel_requested(state) {
         let mut opt_args = format!("-nonInteractive -Options {}", options.join(","));
         if revert_mode {
             opt_args.push_str(" -revertMode");
@@ -421,7 +453,7 @@ fn run_engine_blocking(
     }
 
     // Run Classic Apps if any and not cancelled
-    if !classic_apps.is_empty() && !was_cancelled {
+    if !classic_apps.is_empty() && !cancel_requested(state) {
         let app_args = format!("-nonInteractive -InstallClassicApps {}", classic_apps.join(","));
         match execute_step(&app, &state, &log_path, &script_str, &work_dir, &app_args, "Installing classic apps...") {
             Ok(step_res) => {
@@ -442,6 +474,7 @@ fn run_engine_blocking(
         }
     }
 
+    let was_cancelled = cancel_requested(state);
     let success = !was_cancelled && last_exit_code == 0 && total_errors == 0;
     let final_status = if was_cancelled {
         "Cancelled"
