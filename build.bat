@@ -24,7 +24,7 @@ if %errorlevel% neq 0 (
 )
 
 echo [1/3] Installing NPM dependencies...
-call npm install
+call npm ci
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to install NPM packages.
     pause
@@ -42,7 +42,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [3/3] Compiling Rust + Tauri release binary...
-call npx tauri build --no-bundle
+call npx tauri build --bundles nsis
 if %errorlevel% neq 0 (
     echo [ERROR] Tauri build failed.
     pause
@@ -50,15 +50,32 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo Copying executable to project root...
+echo Copying executable and installer to project root...
 copy /y "src-tauri\target\release\kanao-remove-ai.exe" "KanaoRemoveAI.exe" >nul
-if exist "src-tauri\target\release\bundle\nsis\*.exe" (
-    copy /y "src-tauri\target\release\bundle\nsis\*.exe" "KANAO-Remove-AI-Setup.exe" >nul
+if %errorlevel% neq 0 (
+    echo [ERROR] Could not copy the release executable.
+    pause
+    exit /b 1
+)
+
+set "SETUP_FILE="
+for %%F in ("src-tauri\target\release\bundle\nsis\*-setup.exe") do set "SETUP_FILE=%%F"
+if not defined SETUP_FILE (
+    echo [ERROR] NSIS installer was not found in src-tauri\target\release\bundle\nsis.
+    pause
+    exit /b 1
+)
+copy /y "%SETUP_FILE%" "KANAO-Remove-AI-Setup.exe" >nul
+if %errorlevel% neq 0 (
+    echo [ERROR] Could not copy the installer.
+    pause
+    exit /b 1
 )
 
 echo.
 echo ==============================================
 echo [SUCCESS] Build completed successfully!
 echo Executable located at: KanaoRemoveAI.exe
+echo Installer located at: KANAO-Remove-AI-Setup.exe
 echo ==============================================
 pause
