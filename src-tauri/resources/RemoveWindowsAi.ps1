@@ -56,52 +56,12 @@ if ($psversion -ge 7) {
 }
 
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')) {
-    #leave out the trailing " to add supplied params first 
-    $arglist = "-NoProfile -ExecutionPolicy Bypass -C `"& ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/zoicware/RemoveWindowsAI/main/RemoveWindowsAi.ps1')))"
-    #pass the correct params if supplied
-    if ($nonInteractive) {
-        $arglist = $arglist + ' -nonInteractive'
-
-        if ($AllOptions) {
-            $arglist = $arglist + ' -AllOptions'
-        }
-
-        if ($revertMode) {
-            $arglist = $arglist + ' -revertMode'
-        }
-
-        if ($backupMode) {
-            $arglist = $arglist + ' -backupMode'
-        }
-
-
-        if ($Options -and $Options.count -ne 0) {
-            #if options and alloptions is supplied just do all options
-            if ($AllOptions) {
-                #double check arglist has all options (should already have it)
-                if (!($arglist -like '*-AllOptions*')) {
-                    $arglist = $arglist + ' -AllOptions'
-                }
-            }
-            else {
-                $arglist = $arglist + " -Options $Options"
-            }
-        }
-
-        if ($InstallClassicApps -and $InstallClassicApps.Count -ne 0) {
-            $arglist = $arglist + " -InstallClassicApps $InstallClassicApps"
-        }
-    }
-
-    if ($EnableLogging) {
-        $arglist = $arglist + ' -EnableLogging'
-    }
-
-    #add the trailing quote 
-    $arglist = $arglist + '"'
-    Start-Process PowerShell.exe -ArgumentList $arglist -Verb RunAs
-    Exit	
+    Write-Host 'ERROR: Administrator rights are required. Run this script as Administrator.' -ForegroundColor Red
+    exit 1
 }
+
+#every GitHub download is pinned to this reviewed commit of zoicware/RemoveWindowsAI
+$Global:engineSourceCommit = '6c06edadb225f9298dc1392161962e00ff86d3f4'
 
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName System.Windows.Forms
@@ -1156,11 +1116,11 @@ function Install-NOAIPackage {
 
                 Write-Status -msg 'Installing RemoveWindowsAI Package...'
                 try {
-                    Add-WindowsPackage -Online -PackagePath "$PSScriptRoot\RemoveWindowsAIPackage\$arch\ZoicwareRemoveWindowsAI-$($arch)1.0.0.0.cab" -NoRestart -IgnoreCheck -ErrorAction Stop >$null
+                    Add-WindowsPackage -Online -PackagePath "$PSScriptRoot\RemoveWindowsAIPackage\$arch\ZoicwareRemoveWindowsAI-$($arch)1.0.0.1.cab" -NoRestart -IgnoreCheck -ErrorAction Stop >$null
                 }
                 catch {
                     #user is using powershell 7 use dism command as fallback
-                    dism.exe /Online /Add-Package /PackagePath:"$PSScriptRoot\RemoveWindowsAIPackage\$arch\ZoicwareRemoveWindowsAI-$($arch)1.0.0.0.cab" /NoRestart /IgnoreCheck >$null
+                    dism.exe /Online /Add-Package /PackagePath:"$PSScriptRoot\RemoveWindowsAIPackage\$arch\ZoicwareRemoveWindowsAI-$($arch)1.0.0.1.cab" /NoRestart /IgnoreCheck >$null
                 }
            
             }
@@ -1168,19 +1128,19 @@ function Install-NOAIPackage {
                 Write-Status -msg 'Downloading RemoveWindowsAI Package From Github...'
                 $ProgressPreference = 'SilentlyContinue'
                 try {
-                    Invoke-WebRequest -Uri "https://github.com/zoicware/RemoveWindowsAI/raw/refs/heads/main/RemoveWindowsAIPackage/$arch/ZoicwareRemoveWindowsAI-$($arch)1.0.0.0.cab" -OutFile "$($tempDir)ZoicwareRemoveWindowsAI-$($arch)1.0.0.0.cab" -UseBasicParsing -ErrorAction Stop
+                    Invoke-WebRequest -Uri "https://github.com/zoicware/RemoveWindowsAI/raw/$($Global:engineSourceCommit)/RemoveWindowsAIPackage/$arch/ZoicwareRemoveWindowsAI-$($arch)1.0.0.1.cab" -OutFile "$($tempDir)ZoicwareRemoveWindowsAI-$($arch)1.0.0.1.cab" -UseBasicParsing -ErrorAction Stop
                 }
                 catch {
-                    Write-Status -msg "Unable to Download Package at: https://github.com/zoicware/RemoveWindowsAI/raw/refs/heads/main/RemoveWindowsAIPackage/$arch/ZoicwareRemoveWindowsAI-$($arch)1.0.0.0.cab" -errorOutput
+                    Write-Status -msg "Unable to Download Package at: https://github.com/zoicware/RemoveWindowsAI/raw/$($Global:engineSourceCommit)/RemoveWindowsAIPackage/$arch/ZoicwareRemoveWindowsAI-$($arch)1.0.0.1.cab" -errorOutput
                     return
                 }
 
                 Write-Status -msg 'Installing RemoveWindowsAI Package...'
                 try {
-                    Add-WindowsPackage -Online -PackagePath "$($tempDir)ZoicwareRemoveWindowsAI-$($arch)1.0.0.0.cab" -NoRestart -IgnoreCheck -ErrorAction Stop >$null
+                    Add-WindowsPackage -Online -PackagePath "$($tempDir)ZoicwareRemoveWindowsAI-$($arch)1.0.0.1.cab" -NoRestart -IgnoreCheck -ErrorAction Stop >$null
                 }
                 catch {
-                    dism.exe /Online /Add-Package /PackagePath:"$($tempDir)ZoicwareRemoveWindowsAI-$($arch)1.0.0.0.cab" /NoRestart /IgnoreCheck >$null
+                    dism.exe /Online /Add-Package /PackagePath:"$($tempDir)ZoicwareRemoveWindowsAI-$($arch)1.0.0.1.cab" /NoRestart /IgnoreCheck >$null
                 }
             }
         }
@@ -2897,7 +2857,7 @@ function install-classicapps {
         if (!(Test-Path "$($tempDir)ClassicApps")) {
             $ProgressPreference = 'SilentlyContinue'
             Write-Status -msg 'Downloading Classic Apps Files from Github...'
-            $url = 'https://github.com/zoicware/RemoveWindowsAI/archive/refs/heads/main.zip'
+            $url = "https://github.com/zoicware/RemoveWindowsAI/archive/$($Global:engineSourceCommit).zip"
             try {
                 Invoke-WebRequest -Uri $url -OutFile "$($tempDir)main.zip" -ErrorAction Stop
             }
@@ -2906,10 +2866,10 @@ function install-classicapps {
                 return
             }
             Expand-Archive -Path "$($tempDir)main.zip" -DestinationPath "$tempDir" -Force
-            $sourceDir = "$($tempDir)RemoveWindowsAI-main\ClassicApps"
+            $sourceDir = "$($tempDir)RemoveWindowsAI-$($Global:engineSourceCommit)\ClassicApps"
             $destDir = "$($tempDir)ClassicApps"
             Copy-Item -Path $sourceDir -Destination $destDir -Recurse -Force
-            Remove-Item "$($tempDir)RemoveWindowsAI-main" -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item "$($tempDir)RemoveWindowsAI-$($Global:engineSourceCommit)" -Recurse -Force -ErrorAction SilentlyContinue
             Remove-Item "$($tempDir)main.zip" -Recurse -Force -ErrorAction SilentlyContinue
         }
 
@@ -3830,7 +3790,7 @@ else {
                     }
                     catch {}  
                     try {
-                        Remove-Item "$($tempDir)ZoicwareRemoveWindowsAI-*1.0.0.0.cab" -Force -ErrorAction SilentlyContinue
+                        Remove-Item "$($tempDir)ZoicwareRemoveWindowsAI-*1.0.0.1.cab" -Force -ErrorAction SilentlyContinue
                     }
                     catch {}
 
@@ -3888,7 +3848,7 @@ try {
 }
 catch {}
 try {
-    Remove-Item "$($tempDir)ZoicwareRemoveWindowsAI-*1.0.0.0.cab" -Force -ErrorAction SilentlyContinue
+    Remove-Item "$($tempDir)ZoicwareRemoveWindowsAI-*1.0.0.1.cab" -Force -ErrorAction SilentlyContinue
 }
 catch {}
 
