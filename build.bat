@@ -10,7 +10,7 @@ echo.
 where node >nul 2>nul
 if %errorlevel% neq 0 (
     echo [ERROR] Node.js is not installed or not in PATH.
-    echo Please install Node.js (https://nodejs.org)
+    echo Please install Node.js ^(https://nodejs.org^)
     pause
     exit /b 1
 )
@@ -18,7 +18,7 @@ if %errorlevel% neq 0 (
 where cargo >nul 2>nul
 if %errorlevel% neq 0 (
     echo [ERROR] Rust / Cargo is not installed or not in PATH.
-    echo Please install Rust (https://rustup.rs)
+    echo Please install Rust ^(https://rustup.rs^)
     pause
     exit /b 1
 )
