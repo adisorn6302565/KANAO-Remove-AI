@@ -1,8 +1,8 @@
 This project bundles third-party software.
 
-## RemoveWindowsAI (Resources/RemoveWindowsAi.ps1)
+## RemoveWindowsAI (src-tauri/resources/RemoveWindowsAi.ps1)
 
-Source: https://github.com/zoicware/RemoveWindowsAI
+Source: https://github.com/zoicware/RemoveWindowsAI at commit `6c06edadb225f9298dc1392161962e00ff86d3f4`
 
 MIT License
 
