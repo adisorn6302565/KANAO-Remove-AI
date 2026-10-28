@@ -1,245 +1,124 @@
 # ⚡ KANAO Remove AI
 
-[![Build](https://github.com/adisorn6302565/KANAO-Remove-AI/actions/workflows/build.yml/badge.svg)](https://github.com/adisorn6302565/KANAO-Remove-AI/actions/workflows/build.yml)
+[![Build & Release](https://github.com/adisorn6302565/KANAO-Remove-AI/actions/workflows/build.yml/badge.svg)](https://github.com/adisorn6302565/KANAO-Remove-AI/actions/workflows/build.yml)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4)
-![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
+![Rust](https://img.shields.io/badge/Rust-1.80+-orange)
+![Tauri](https://img.shields.io/badge/Tauri-v2-24C8D8)
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6)
 
-**GUI สำหรับปิด / ลบฟีเจอร์ AI ใน Windows 10/11** (Copilot, Recall, AI ใน Paint/Notepad/Snipping Tool ฯลฯ) ด้วยการคลิกเดียว
+**GUI สำหรับปิด / ลบฟีเจอร์ AI ใน Windows 10/11** (Copilot, Recall, AI ใน Paint/Notepad/Snipping Tool ฯลฯ) ด้วยคลิกเดียว พัฒนาใหม่ด้วยสถาปัตยกรรม **Rust + React + TypeScript + Tauri v2**
 
-A WPF front-end for the [RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI) engine by **@zoicware** — toggle what you want, press **Apply**, restart.
+A modern desktop GUI for the [RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI) engine by **@zoicware** — lightweight, native, fast, and secure.
 
-> ⚠️ This tool changes the registry, removes system packages and deletes system files. Turn on **Backup Mode** (creates a System Restore point) and try it in a VM first if unsure.
+> ⚠️ เครื่องมือนี้มีการปรับแต่ง Registry, ลบแพ็กเกจระบบ และไฟล์ของระบบ แนะนำให้เปิด **Backup Mode** (สร้างจุด System Restore ก่อน) ทุกครั้ง
 
 ---
 
 ## 🇹🇭 วิธีติดตั้งและใช้งาน (ภาษาไทย)
 
-**ไม่ต้องติดตั้ง** เป็นไฟล์ EXE ไฟล์เดียว ดาวน์โหลดแล้วเปิดใช้ได้เลย
+**ไม่ต้องติดตั้ง** สามารถดาวน์โหลดไฟล์ EXE เดียว เปิดใช้งานได้ทันที
 
 1. ไปที่หน้า [**Releases ล่าสุด**](../../releases/latest)
-2. ดาวน์โหลด **`KanaoRemoveAI.exe`** (~70 MB, ใช้ได้ทุกเครื่อง)
-   หรือ `KanaoRemoveAI-small.exe` (~0.5 MB, ต้องมี [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) ก่อน)
-3. ดับเบิลคลิกไฟล์ → กด **Yes** ที่ UAC (ต้องใช้สิทธิ์ Administrator)
-   - ถ้า Windows SmartScreen เตือน ให้กด **More info → Run anyway** (โปรแกรมยังไม่ได้ sign)
-4. เปิด **Backup Mode** (สร้างจุด System Restore ก่อน, แนะนำครั้งแรก)
-5. เลือกฟีเจอร์ที่ต้องการปิด → กด **⚡ Apply** → ยืนยัน
-6. รอจนเสร็จ แล้วกด **Yes** เพื่อรีสตาร์ทเครื่อง
+2. ดาวน์โหลด **`kanao-remove-ai.exe`**
+3. ดับเบิลคลิกไฟล์ → กด **Yes** ที่หน้าต่าง UAC (ต้องใช้สิทธิ์ Administrator)
+   - หาก Windows SmartScreen เตือน ให้กด **More info → Run anyway**
+4. เลือกโหมด:
+   - **Backup Mode**: สร้างจุด System Restore ก่อนทำการปรับแต่ง (แนะนำอย่างยิ่ง)
+   - **Revert Mode**: ย้อนกลับการตั้งค่าและกู้คืนฟีเจอร์ที่เคยปิดไว้
+5. เลือกฟีเจอร์ AI ที่ต้องการปิด หรือ Classic Apps ที่ต้องการกู้คืน → กด **⚡ Apply Changes**
+6. ดูการทำงานสดๆ ได้ใน **Execution Console** ด้านล่าง
+7. เมื่อเสร็จสิ้น สามารถกด **Restart PC Now** เพื่อให้ระบบรีสตาร์ทและมีผลสมบูรณ์
 
-**ย้อนกลับ:** เปิด **Revert Mode** → เลือกฟีเจอร์เดิม → Apply  หรือใช้ System Restore จาก Backup Mode
-**ดู log:** กดปุ่ม **📄 Open Log** (ไฟล์อยู่ที่ `%TEMP%\KanaoRemoveAI\`)
-**ถอนโปรแกรม:** ลบไฟล์ EXE ทิ้งได้เลย (ไม่มีอะไรติดตั้งค้างในเครื่อง)
+---
 
-**Build เอง:** ติดตั้ง [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) แล้วดับเบิลคลิก `build.bat` → ได้ไฟล์ที่ `publish\KanaoRemoveAI.exe`
+## 🏗️ สถาปัตยกรรมระบบ (Architecture)
+
+ระบบเดิมที่เป็น C# WPF (.NET 8) ได้รับการปรับเปลี่ยนเป็นโครงสร้างใหม่ทั้งหมด:
 
 ```mermaid
-flowchart LR
-    A[Releases] -->|ดาวน์โหลด| B[KanaoRemoveAI.exe]
-    B -->|UAC: Yes| C[เปิดโปรแกรม]
-    C --> D[Backup Mode ✔]
-    D --> E[เลือกฟีเจอร์]
-    E --> F[⚡ Apply]
-    F --> G{สำเร็จ?}
-    G -->|ใช่| H[รีสตาร์ท]
-    G -->|ไม่| I[📄 Open Log]
-```
-
----
-
-## Contents
-
-- [Download](#-download)
-- [How it works](#-how-it-works)
-- [Features](#-features)
-- [Usage](#-usage)
-- [Build from source](#-build-from-source)
-- [What's new in v1.1](#-whats-new-in-v11)
-- [Troubleshooting](#-troubleshooting)
-- [Credits & license](#-credits--license)
-
----
-
-## 📥 Download
-
-Get the latest build from **[Releases](../../releases)**:
-
-| File | Size | Needs |
-|---|---|---|
-| `KanaoRemoveAI.exe` | ~70 MB | nothing — self-contained |
-| `KanaoRemoveAI-small.exe` | ~0.5 MB | [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) |
-
-Both require **administrator** rights (UAC prompt on launch).
-
----
-
-## 🧩 How it works
-
-The GUI does not re-implement anything: it passes your selections to the bundled engine script, running it in **Windows PowerShell 5.1** (the engine does not support PowerShell 7).
-
-```mermaid
-flowchart LR
-    subgraph EXE["KanaoRemoveAI.exe (WPF, .NET 8)"]
-        UI["MainWindow<br/>toggles · modes · log"]
-        R["PowerShellRunner"]
-        RES[("Embedded<br/>RemoveWindowsAi.ps1")]
-        UI -- "selected options" --> R
-        RES -. "extract (UTF-8 BOM)" .-> R
+flowchart TD
+    subgraph Frontend["Frontend (React 19 + TypeScript + Vite)"]
+        UI["Modern Fluent UI / Cyber Dark Theme"]
+        Tabs["Category Tabs (Core, Package, Deep, App, Classic)"]
+        Console["Real-time Streaming Log Viewer"]
+        State["Selection State & Mode Controls"]
     end
-    R -- "powershell.exe -Command<br/>& engine.ps1 -nonInteractive -Options …" --> PS["Windows PowerShell 5.1"]
-    PS -- "stdout / stderr (live)" --> R
-    R -- "log lines + exit code" --> UI
-    R -- "append" --> LOG[("%TEMP%\KanaoRemoveAI\log-*.txt")]
-    PS --> WIN[("Registry · Appx/CBS packages<br/>Scheduled tasks · System files")]
-```
 
-### Apply sequence
-
-```mermaid
-sequenceDiagram
-    actor U as User
-    participant UI as MainWindow
-    participant R as PowerShellRunner
-    participant PS as powershell.exe (5.1)
-
-    U->>UI: Toggle features, click ⚡ Apply
-    UI->>U: Confirm (mode + count)
-    U-->>UI: Yes
-    UI->>UI: Show overlay (live status + Cancel)
-    UI->>R: RemoveFeaturesAsync(options, revert, backup)
-    R->>R: Kill running AI processes
-    R->>PS: Start engine
-    loop while running
-        PS-->>R: output line
-        R-->>UI: append to log + overlay
+    subgraph Backend["Backend (Rust + Tauri v2)"]
+        Tauri["Tauri IPC & Commands"]
+        Admin["Admin Elevation & UAC Helper (Win32 API)"]
+        Proc["Process Manager & Child Tree Killer"]
+        Script["Embedded Engine (RemoveWindowsAi.ps1 with UTF-8 BOM)"]
     end
-    alt User presses Cancel
-        UI->>R: cancel token
-        R->>PS: Kill process tree
-        UI->>U: "Cancelled — some changes may be applied"
-    else Finished
-        PS-->>R: exit code
-        opt Classic apps selected
-            UI->>R: InstallClassicAppsAsync(apps)
-            R->>PS: Start engine again
-        end
-        alt every step exit code 0
-            UI->>U: Restart now?
-        else a step failed
-            UI->>U: Error summary + log file path (no restart prompt)
-        end
+
+    subgraph System["Windows OS"]
+        PS["Windows PowerShell 5.1 (powershell.exe)"]
+        Reg["Windows Registry / Appx / CBS Store"]
     end
-```
 
-### Modes
-
-```mermaid
-stateDiagram-v2
-    [*] --> Normal
-    Normal --> Backup: toggle Backup
-    Normal --> Revert: toggle Revert
-    Backup --> Revert: toggle Revert (Backup turns off)
-    Revert --> Backup: toggle Backup (Revert turns off)
-    Backup --> Normal
-    Revert --> Normal
-
-    Normal: Apply = disable / remove
-    Backup: Restore point first, then disable / remove
-    Revert: Re-enable features, restore packages
+    Frontend <==>|Tauri IPC / Events| Backend
+    Backend -->|Spawn & Stream stdout/stderr| PS
+    PS --> Reg
 ```
 
 ---
 
-## 🔥 Features
+## ✨ รายการฟีเจอร์ (Features)
 
-| Group | Option | Engine flag | What it does |
-|---|---|---|---|
-| **Core** | Disable AI Registry Keys | `DisableRegKeys` | Copilot, Recall, Input Insights, AI Actions, Voice Access, AI voice effects, Gaming AI, Office AI, AI in Settings search |
-| | Disable Copilot Policies | `DisableCopilotPolicies` | Edits `IntegratedServicesRegionPolicySet.json` |
-| | Hide AI Components | `HideAIComponents` | Hides the *AI Components* page in Settings |
-| **Packages** | Remove AI Appx Packages | `RemoveAppxPackages` | Removes AI Appx packages, including non-removable/inbox ones |
-| | Remove AI CBS Packages | `RemoveCBSPackages` | Removes hidden AI packages from the Component-Based Servicing store |
-| | Prevent AI Reinstall | `PreventAIPackageReinstall` | Installs a blocker package so Windows Update does not reinstall them (downloaded from the engine repo) |
-| **Deep clean** | Remove AI Files & Folders | `RemoveAIFiles` | Installers, ML DLLs, Copilot installers, leftovers |
-| | Remove Recall Feature | `RemoveRecallFeature` | Optional feature → *DisabledWithPayloadRemoved* |
-| | Remove Recall Tasks | `RemoveRecallTasks` | Deletes Recall scheduled tasks |
-| **Apps** | Disable Notepad AI Rewrite | `DisableRewrite` | Turns off Rewrite in Notepad |
+### 🔑 Core AI Removal
+- **Disable AI Registry Keys**: ปิด Copilot, Recall, Input Insights, AI Actions, Voice Access, AI Voice Effects, Gaming AI, Office AI และ AI ใน Settings Search
+- **Disable Copilot Policies**: ปรับแก้ `IntegratedServicesRegionPolicySet.json` เพื่อปิด Policy ทั้งหมดของ Copilot
+- **Hide AI Components**: ซ่อนหน้าการตั้งค่า AI Components ออกจากหน้า Windows Settings
 
-**Classic apps:** Photo Viewer (`photoviewer`), Paint (`mspaint`), Snipping Tool (`snippingtool`), Notepad (`notepad`), Photos Legacy (`photoslegacy`).
+### 📦 Package Removal
+- **Remove AI Appx Packages**: ถอนการติดตั้งแพ็กเกจ Appx ที่เกี่ยวข้องกับ AI รวมถึง Inbox packages
+- **Remove AI CBS Packages**: ลบแพ็กเกจใน Component-Based Servicing store
+- **Prevent AI Reinstall**: ป้องกัน Windows Update ติดตั้งแพ็กเกจ AI กลับคืนมา
 
----
+### 🧹 Deep Clean
+- **Remove AI Files & Folders**: ลบโฟลเดอร์ติดตั้ง Appx, Machine Learning DLLs, ตัวติดตั้ง Copilot ที่ซ่อนอยู่
+- **Remove Recall Feature**: ปิดการทำงานและลบฟีเจอร์ Windows Recall ออกทั้งหมด (DisabledWithPayloadRemoved)
+- **Remove Recall Tasks**: ลบ Scheduled Tasks ของ Recall ด้วยสิทธิ์ระดับระบบ
 
-## 🚀 Usage
+### 📝 App Specific
+- **Disable Notepad AI Rewrite**: ปิดฟีเจอร์ AI Rewrite ใน Windows Notepad
 
-1. Run `KanaoRemoveAI.exe` and accept UAC.
-2. Turn on **Backup Mode** (recommended the first time).
-3. Toggle the features / classic apps you want — click a card or its switch; `?` shows the full description.
-4. Click **⚡ Apply** and confirm. Progress is shown live; **✖ Cancel** stops the engine.
-5. Restart when prompted.
-
-To undo: turn on **Revert Mode**, select the same options, **Apply**. Or use the restore point from Backup Mode.
-
-Every run is logged to `%TEMP%\KanaoRemoveAI\log-<date>-<time>.txt` — the **📄 Open Log** button opens it.
+### 🎨 Classic Windows Apps (Restoration)
+- **Classic Photo Viewer**: กู้คืน Windows Photo Viewer คลาสสิก
+- **Classic Paint**: กู้คืน Paint ดั้งเดิม (mspaint.exe)
+- **Classic Snipping Tool**: กู้คืน Snipping Tool รุ่นคลาสสิก
+- **Classic Notepad**: กู้คืน Notepad ดั้งเดิมที่ไม่มี AI
+- **Photos Legacy**: ติดตั้ง Microsoft Photos Legacy
 
 ---
 
-## 🛠️ Build from source
+## 🛠️ วิธี Build จาก Source Code
 
-Requires the .NET 8 SDK on Windows.
+### สิ่งที่ต้องมีในเครื่อง:
+1. **Node.js** (v18+ แนะนำ v20 หรือ v22)
+2. **Rust & Cargo** (v1.78+)
+3. **Windows 10 / 11**
 
-```powershell
-git clone https://github.com/adisorn6302565/KANAO-Remove-AI.git
-cd KANAO-Remove-AI
-dotnet publish RemoveWindowsAI.csproj -c Release -o publish
-# -> publish\KanaoRemoveAI.exe
+### ขั้นตอนการ Build:
+```bash
+# 1. ติดตั้ง Dependencies
+npm install
+
+# 2. ทดสอบรัน Development Mode
+npm run tauri dev
+
+# 3. Build ไฟล์ Release EXE
+npm run tauri build
+# หรือดับเบิลคลิกไฟล์ build.bat
 ```
 
-**Updating the engine:** replace `Resources/RemoveWindowsAi.ps1` with a newer copy from [zoicware/RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI) and rebuild — or, without rebuilding, drop `RemoveWindowsAi.ps1` next to the EXE; a file there takes priority over the embedded one.
-
-**Releasing:** push a tag such as `v1.1.0`; GitHub Actions builds both EXEs and attaches them to a Release.
-
-```text
-KANAO-Remove-AI/
-├── App.xaml(.cs)
-├── MainWindow.xaml(.cs)          # UI, feature list, apply / cancel / report
-├── Models/FeatureItem.cs
-├── Services/
-│   ├── PowerShellRunner.cs       # runs the engine in powershell.exe 5.1
-│   └── AdminHelper.cs
-├── Themes/DarkTheme.xaml
-├── Resources/RemoveWindowsAi.ps1 # engine (zoicware, MIT)
-├── app.manifest                  # requireAdministrator
-└── .github/workflows/build.yml   # CI build + Release on tag
-```
+ไฟล์ Binary ที่ได้จะอยู่ที่: `src-tauri/target/release/kanao-remove-ai.exe`
 
 ---
 
-## 🆕 What's new in v1.1
+## 📜 Credits & License
 
-| v1.0 | v1.1 |
-|---|---|
-| The engine ran inside the embedded **PowerShell 7** SDK. The engine exits immediately on PS 7, so **no option was actually applied**, but the UI still said "Operation completed successfully" | Runs in **Windows PowerShell 5.1** as a separate process, as the engine requires |
-| Always reported success and offered a restart | Uses the real exit code; on failure shows a summary and the log path, with no restart prompt |
-| Overlay hid the log; the run could not be stopped | Overlay shows the live output line and a **Cancel** button that kills the engine |
-| The window could be closed mid-run | Closing is blocked while a run is in progress |
-| No log file | Full log in `%TEMP%\KanaoRemoveAI`, **Open Log** button |
-| The overlay briefly hid between the feature run and the classic apps run | One continuous overlay for the whole run |
-| 87 MB EXE committed to git (bundled the PowerShell SDK) | PowerShell SDK removed: 72 MB self-contained or 0.5 MB small build, published through GitHub Releases |
-| No credit for the engine | Credits and MIT notice for zoicware/RemoveWindowsAI |
-
----
-
-## ❓ Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| "⚠ Not Admin" in the header | Right-click → *Run as administrator* |
-| Finished with errors | Click **Open Log** and look at lines starting with `ERROR:` |
-| *Prevent AI Reinstall* fails | It downloads a package from GitHub, so check your internet/firewall |
-| Features came back after a Windows update | Run again with *Prevent AI Reinstall* enabled |
-| Antivirus flags the EXE | Expected for tools that modify system packages; build from source to verify |
-
----
-
-## 📄 Credits & license
-
-- **Engine:** [RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI) © zoicware, MIT License. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-- **GUI:** KANAO ⚡, provided as-is for personal and educational use.
+- Original Engine: [RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI) by **@zoicware**
+- Frontend & Tauri Port: **KANAO**
+- Distributed under the MIT License. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details.

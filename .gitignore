@@ -1,46 +1,31 @@
-## .NET / C# / WPF
-bin/
-obj/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-.vs/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-## Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-build/
-bld/
+node_modules
+dist
+dist-ssr
+*.local
 
-## NuGet
-*.nupkg
-**/packages/*
-*.nuget.props
-*.nuget.targets
-
-## Visual Studio
-*.rsuser
-*.ncb
-*.opendb
-*.sdf
-*.opensdf
-*.cachefile
-*.VC.db
-*.VC.VC.opendb
-
-## Rider
-.idea/
-
-## OS
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-## Local publish output
+# Tauri & Rust
+src-tauri/target/
+src-tauri/gen/
 publish/
-out/
-Releases/
+*.exe
+*.msi

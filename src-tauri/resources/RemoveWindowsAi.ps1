@@ -439,7 +439,7 @@ function Set-UwpAppRegistryEntry {
             'AppActions'
             'SearchHost'
             'FESearchHost'
-            'msedgewebview2'
+            # Keep WebView2 running: it also renders the KANAO Tauri UI.
             'TextInputHost'
             'VisualAssistExe'
             'WebExperienceHostApp'
