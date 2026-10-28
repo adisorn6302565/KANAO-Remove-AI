@@ -12,6 +12,8 @@ interface ConfirmModalProps {
   appCount: number;
   revertMode: boolean;
   backupMode: boolean;
+  closesEdge: boolean;
+  closesNotepad: boolean;
 }
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -23,6 +25,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   appCount,
   revertMode,
   backupMode,
+  closesEdge,
+  closesNotepad,
 }) => {
   if (!isOpen) return null;
   const t = UI_TEXT[lang];
@@ -86,6 +90,17 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
               <div>
                 <strong>{t.backupNoticeTitle}</strong>
                 <p>{t.backupNoticeMsg}</p>
+              </div>
+            </div>
+          )}
+
+          {(closesEdge || closesNotepad) && (
+            <div className="notice-box warning-notice">
+              <AlertTriangle size={18} />
+              <div>
+                <strong>{t.closeAppsNoticeTitle}</strong>
+                {closesEdge && <p>{t.closeEdgeNoticeMsg}</p>}
+                {closesNotepad && <p>{t.closeNotepadNoticeMsg}</p>}
               </div>
             </div>
           )}

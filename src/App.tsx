@@ -115,9 +115,9 @@ export const App: React.FC = () => {
     });
   };
 
+  // Classic apps replace installed programs, so they stay an explicit choice.
   const handleSelectAll = () => {
     setSelectedFeatureIds(new Set(AI_FEATURES.map((f) => f.id)));
-    setSelectedAppIds(new Set(CLASSIC_APPS.map((a) => a.id)));
   };
 
   const handleDeselectAll = () => {
@@ -414,6 +414,8 @@ export const App: React.FC = () => {
         appCount={selectedAppIds.size}
         revertMode={revertMode}
         backupMode={backupMode}
+        closesEdge={selectedFeatureIds.has('regkeys')}
+        closesNotepad={selectedAppIds.has('notepad')}
       />
 
       <CompletionModal
